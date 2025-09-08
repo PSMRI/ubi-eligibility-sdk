@@ -29,7 +29,6 @@ cd "$REPO_NAME"
 git log -n 3 --oneline
 
 # ----- Copy Dockerfile and .env -----
-cp "$BASE_DIR/Dockerfile" .
 cp "$BASE_DIR/.env" .
 
 # ----- Build Docker image with tag -----
