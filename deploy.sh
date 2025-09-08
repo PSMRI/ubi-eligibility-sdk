@@ -47,4 +47,9 @@ docker rmi "$REPO_NAME:latest" 2>/dev/null || true
 # ----- Start service with Docker Compose -----
 cd "$BASE_DIR"
 echo "🚀 Starting $CONTAINER_NAME service with docker-compose..."
-docker-co
+docker-compose up -d --build --force-recreate
+
+# ----- Wait and show logs -----
+sleep 15
+echo "📄 Logs from $CONTAINER_NAME ($TAG):"
+docker logs "$CONTAINER_NAME"
