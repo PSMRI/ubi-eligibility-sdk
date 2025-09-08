@@ -45,7 +45,7 @@ fi
 docker rmi "$REPO_NAME:latest" 2>/dev/null || true
 
 # ----- Start service with Docker Compose -----
-cd "$BASE_DIR"
+cd "$BASE_DIR/$REPO_NAME"
 echo "🚀 Starting $CONTAINER_NAME service with docker-compose..."
 docker-compose up -d --build --force-recreate
 
