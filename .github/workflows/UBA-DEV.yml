@@ -1,34 +1,59 @@
-name: Deploy to UBA-DEV
+name: Deploy Eligibility SDK
+
 on:
+  workflow_dispatch:
+    inputs:
+      TAG:
+        description: 'Docker image tag to deploy'
+        required: true
+        default: 'latest'
+      BRANCH:
+        description: 'Git branch to deploy'
+        required: true
+        default: 'main'
   push:
-    branches: [ main ]
+    tags:
+      - '*'  # Trigger on any tag push
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     environment: UBA-DEV
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up SSH key
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
-    - name: Deploy to server
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} <<'ENDSSH'
-        cd ${{ secrets.TARGET_DIR }}
-        ./deploy.sh
-        ENDSSH
+      - name: Deploy to server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} <<'ENDSSH'
+            export BASE_DIR="${{ secrets.TARGET_DIR }}"
+            export REPO_NAME="ubi-eligibility-sdk"
+            export REPO_URL="https://github.com/PSMRI/ubi-eligibility-sdk.git"
+            export BRANCH="${{ github.event.inputs.BRANCH || 'main' }}"
+            export TAG="${{ github.event.inputs.TAG || github.ref_name || 'latest' }}"
+            export CONTAINER_NAME="eligibility-sdk"
 
-    ## Notify on Slack
-    - name: Notify on Slack channel
-      uses: iRoachie/slack-github-actions@v2.3.2
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      with:
-        status: ${{ job.status }}
-      if: ${{ always() }}
+            cd "$BASE_DIR" || exit 1
+
+            # Prepare .env
+            if [ -f .env ]; then rm .env; fi
+            echo '${{ secrets.DEV_ENV }}' > .env
+
+            # Run deploy script
+            bash deploy.sh
+          ENDSSH
+
+      - name: Notify on Slack channel
+        uses: iRoachie/slack-github-actions@v2.3.2
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        with:
+          status: ${{ job.status }}
+        if: ${{ always() }}
