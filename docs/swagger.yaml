@@ -1,0 +1,685 @@
+openapi: 3.0.3
+info:
+  title: Benefit Eligibility SDK API
+  description: |
+    A comprehensive API for checking user eligibility against various benefit schemes.
+    This SDK provides RESTful endpoints to evaluate user eligibility based on configurable rules and criteria.
+    
+    ## Features
+    - Single user, multiple benefits eligibility check
+    - Multiple users, single benefit eligibility check
+    - Configurable eligibility rules and criteria
+    - Detailed eligibility reasons and evaluation results
+    - Support for custom evaluation logic
+    - Comprehensive error handling and validation
+    
+    ## Use Cases
+    - Government benefit programs
+    - Educational scholarships
+    - Healthcare assistance programs
+    - Financial aid programs
+    - Social welfare schemes
+  version: 1.0.0
+  contact:
+    name: API Support Team
+    email: support@benefit-eligibility-sdk.com
+    url: https://github.com/your-org/ubi-eligibility-sdk
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3011
+    description: Development server
+  - url: https://staging-api.benefit-eligibility.com
+    description: Staging server
+  - url: https://api.benefit-eligibility.com
+    description: Production server
+
+tags:
+  - name: Eligibility
+    description: Endpoints for checking user eligibility against benefit schemes
+  - name: System
+    description: System health and monitoring endpoints
+
+paths:
+  /check-eligibility:
+    post:
+      tags:
+        - Eligibility
+      summary: Check eligibility for a single user against multiple benefit schemes
+      description: |
+        Evaluates a single user profile against multiple benefit schemas and returns detailed eligibility results.
+        This endpoint is ideal for checking if a user qualifies for various benefit programs.
+      operationId: checkEligibility
+      parameters:
+        - name: strictChecking
+          in: query
+          description: Enable strict eligibility checking mode
+          required: false
+          schema:
+            type: boolean
+            default: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckEligibilityRequest'
+            examples:
+              scholarship_example:
+                summary: Scholarship Eligibility Check
+                value:
+                  userProfile:
+                    name: "John Doe"
+                    gender: "male"
+                    age: 16
+                    dateOfBirth: "2008-01-01"
+                    caste: "sc"
+                    income: 400000
+                    class: "9"
+                    previousYearMarks: 75
+                    state: "Maharashtra"
+                  benefitsList:
+                    - id: "ubi-pilot-scholarship-1"
+                      eligibility:
+                        - id: "B1"
+                          type: "userProfile"
+                          description: "The applicant must be from SC or ST or OBC castes"
+                          criteria:
+                            name: "caste"
+                            condition: "in"
+                            conditionValues: ["sc", "st", "obc"]
+                        - id: "B2"
+                          type: "userProfile"
+                          description: "The Total Annual income must not exceed ₹2.7 Lakh per Annum"
+                          criteria:
+                            name: "income"
+                            condition: "lte"
+                            conditionValues: 270000
+                      eligibilityEvaluationLogic: "(B1 && B2)"
+      responses:
+        '200':
+          description: Successful eligibility check
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EligibilityResponse'
+              examples:
+                eligible_example:
+                  summary: User is eligible for benefits
+                  value:
+                    eligible:
+                      - schemaId: "ubi-pilot-scholarship-1"
+                        details:
+                          isEligible: true
+                          reasons: ["Eligible: All criteria passed"]
+                          evaluationResults:
+                            B1: true
+                            B2: true
+                          criteriaResults:
+                            - ruleKey: "B1"
+                              passed: true
+                              description: "The applicant must be from SC or ST or OBC castes"
+                              reasons: []
+                            - ruleKey: "B2"
+                              passed: true
+                              description: "The Total Annual income must not exceed ₹2.7 Lakh per Annum"
+                              reasons: []
+                    ineligible: []
+                    errors: []
+                ineligible_example:
+                  summary: User is not eligible for benefits
+                  value:
+                    eligible: []
+                    ineligible:
+                      - schemaId: "ubi-pilot-scholarship-1"
+                        details:
+                          isEligible: false
+                          reasons: ["Income 400000 exceeds the maximum limit of 270000"]
+                          evaluationResults:
+                            B1: true
+                            B2: false
+                          criteriaResults:
+                            - ruleKey: "B1"
+                              passed: true
+                              description: "The applicant must be from SC or ST or OBC castes"
+                              reasons: []
+                            - ruleKey: "B2"
+                              passed: false
+                              description: "The Total Annual income must not exceed ₹2.7 Lakh per Annum"
+                              reasons: ["Income 400000 exceeds the maximum limit of 270000"]
+                    errors: []
+        '400':
+          description: Bad request - Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validation_error:
+                  summary: Validation error
+                  value:
+                    error: "Bad Request"
+                    message: "Request validation failed"
+                    details:
+                      - field: "userProfile.income"
+                        message: "must be a number"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /check-users-eligibility:
+    post:
+      tags:
+        - Eligibility
+      summary: Check eligibility of multiple users for a single benefit scheme
+      description: |
+        Evaluates multiple user profiles against a single benefit schema and returns detailed eligibility results.
+        This endpoint is ideal for batch processing of user eligibility checks.
+      operationId: checkUsersEligibility
+      parameters:
+        - name: strictChecking
+          in: query
+          description: Enable strict eligibility checking mode
+          required: false
+          schema:
+            type: boolean
+            default: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckUsersEligibilityRequest'
+            examples:
+              batch_check_example:
+                summary: Batch Eligibility Check
+                value:
+                  userProfiles:
+                    - name: "John Doe"
+                      gender: "male"
+                      age: 16
+                      dateOfBirth: "2008-01-01"
+                      caste: "sc"
+                      income: 200000
+                      class: "9"
+                      previousYearMarks: 75
+                      state: "Maharashtra"
+                      applicationId: "APP001"
+                    - name: "Jane Smith"
+                      gender: "female"
+                      age: 17
+                      dateOfBirth: "2007-05-15"
+                      caste: "st"
+                      income: 300000
+                      class: "11"
+                      previousYearMarks: 85
+                      state: "Rajasthan"
+                      applicationId: "APP002"
+                  benefitSchema:
+                    id: "ubi-pilot-scholarship-1"
+                    eligibility:
+                      - id: "B1"
+                        type: "userProfile"
+                        description: "The applicant must be from SC or ST or OBC castes"
+                        criteria:
+                          name: "caste"
+                          condition: "in"
+                          conditionValues: ["sc", "st", "obc"]
+                      - id: "B2"
+                        type: "userProfile"
+                        description: "The Total Annual income must not exceed ₹2.7 Lakh per Annum"
+                        criteria:
+                          name: "income"
+                          condition: "lte"
+                          conditionValues: 270000
+                    eligibilityEvaluationLogic: "(B1 && B2)"
+      responses:
+        '200':
+          description: Successful batch eligibility check
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersEligibilityResponse'
+              examples:
+                batch_result_example:
+                  summary: Batch eligibility results
+                  value:
+                    eligibleUsers:
+                      - applicationId: "APP001"
+                        details:
+                          isEligible: true
+                          reasons: ["Eligible: All criteria passed"]
+                          evaluationResults:
+                            B1: true
+                            B2: true
+                          criteriaResults:
+                            - ruleKey: "B1"
+                              passed: true
+                              description: "The applicant must be from SC or ST or OBC castes"
+                              reasons: []
+                            - ruleKey: "B2"
+                              passed: true
+                              description: "The Total Annual income must not exceed ₹2.7 Lakh per Annum"
+                              reasons: []
+                    ineligibleUsers:
+                      - applicationId: "APP002"
+                        details:
+                          isEligible: false
+                          reasons: ["Income 300000 exceeds the maximum limit of 270000"]
+                          evaluationResults:
+                            B1: true
+                            B2: false
+                          criteriaResults:
+                            - ruleKey: "B1"
+                              passed: true
+                              description: "The applicant must be from SC or ST or OBC castes"
+                              reasons: []
+                            - ruleKey: "B2"
+                              passed: false
+                              description: "The Total Annual income must not exceed ₹2.7 Lakh per Annum"
+                              reasons: ["Income 300000 exceeds the maximum limit of 270000"]
+                    errors: []
+        '400':
+          description: Bad request - Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /health:
+    get:
+      tags:
+        - System
+      summary: Health check endpoint
+      description: Returns the health status of the Benefit Eligibility SDK service
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                healthy_status:
+                  summary: Service is running
+                  value:
+                    status: "ok"
+                    timestamp: "2024-01-15T10:30:00Z"
+                    version: "1.0.0"
+
+  /documentation:
+    get:
+      tags:
+        - System
+      summary: API documentation
+      description: Returns the Swagger UI documentation for the API
+      operationId: getDocumentation
+      responses:
+        '200':
+          description: Swagger UI documentation
+          content:
+            text/html:
+              schema:
+                type: string
+
+components:
+  schemas:
+    UserProfile:
+      type: object
+      required:
+        - name
+        - gender
+        - age
+        - dateOfBirth
+        - caste
+        - income
+      properties:
+        name:
+          type: string
+          description: Full name of the user
+          example: "John Doe"
+        gender:
+          type: string
+          enum: [male, female]
+          description: Gender of the user
+          example: "male"
+        age:
+          type: number
+          description: Age of the user
+          minimum: 0
+          maximum: 120
+          example: 16
+        dateOfBirth:
+          type: string
+          format: date
+          description: Date of birth in YYYY-MM-DD format
+          example: "2008-01-01"
+        caste:
+          type: string
+          enum: [sc, st, obc, general, ews, bc, mbc, nt, vjan, dnt, sbc, other]
+          description: Caste category
+          example: "sc"
+        income:
+          type: number
+          description: Annual income in INR
+          minimum: 0
+          example: 400000
+        class:
+          type: string
+          description: Educational class/grade
+          example: "9"
+        previousYearMarks:
+          type: number
+          description: Previous year academic marks
+          minimum: 0
+          maximum: 100
+          example: 75
+        state:
+          type: string
+          description: State of residence
+          example: "Maharashtra"
+        applicationId:
+          type: string
+          description: Unique application identifier
+          example: "APP001"
+        documents:
+          type: object
+          description: User documents with verification status
+          additionalProperties:
+            type: object
+            properties:
+              verified:
+                type: boolean
+                description: Whether the document is verified
+                example: true
+
+    EligibilityCriteria:
+      type: object
+      required:
+        - id
+        - type
+        - description
+        - criteria
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the criteria
+          example: "B1"
+        type:
+          type: string
+          enum: [userProfile, document]
+          description: Type of criteria
+          example: "userProfile"
+        description:
+          type: string
+          description: Human-readable description of the criteria
+          example: "The applicant must be from SC or ST or OBC castes"
+        criteria:
+          type: object
+          required:
+            - name
+            - condition
+            - conditionValues
+          properties:
+            name:
+              type: string
+              description: Field name to check
+              example: "caste"
+            condition:
+              type: string
+              enum: [equals, not_equals, gt, gte, lt, lte, in, not_in, between, not_between, regex, contains]
+              description: Condition to apply
+              example: "in"
+            conditionValues:
+              oneOf:
+                - type: string
+                - type: number
+                - type: array
+                  items:
+                    oneOf:
+                      - type: string
+                      - type: number
+              description: Values to compare against
+              example: ["sc", "st", "obc"]
+        allowedProofs:
+          type: array
+          items:
+            type: string
+          description: List of allowed document types for verification
+          example: ["casteCertificate", "incomeCertificate"]
+
+    BenefitSchema:
+      type: object
+      required:
+        - eligibility
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the benefit schema
+          example: "ubi-pilot-scholarship-1"
+        eligibility:
+          type: array
+          items:
+            $ref: '#/components/schemas/EligibilityCriteria'
+          description: List of eligibility criteria
+        eligibilityEvaluationLogic:
+          type: string
+          description: Custom evaluation logic expression
+          example: "(B1 && B2) || B3"
+
+    CheckEligibilityRequest:
+      type: object
+      required:
+        - userProfile
+        - benefitsList
+      properties:
+        userProfile:
+          $ref: '#/components/schemas/UserProfile'
+        benefitsList:
+          type: array
+          items:
+            $ref: '#/components/schemas/BenefitSchema'
+          description: List of benefit schemas to check against
+
+    CheckUsersEligibilityRequest:
+      type: object
+      required:
+        - userProfiles
+        - benefitSchema
+      properties:
+        userProfiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserProfile'
+          description: List of user profiles to check
+        benefitSchema:
+          $ref: '#/components/schemas/BenefitSchema'
+
+    EligibilityDetails:
+      type: object
+      properties:
+        isEligible:
+          type: boolean
+          description: Whether the user is eligible
+          example: true
+        reasons:
+          type: array
+          items:
+            type: string
+          description: List of reasons for eligibility/ineligibility
+          example: ["Eligible: All criteria passed"]
+        evaluationResults:
+          type: object
+          additionalProperties:
+            type: boolean
+          description: Results of individual criteria evaluation
+          example:
+            B1: true
+            B2: true
+        criteriaResults:
+          type: array
+          items:
+            $ref: '#/components/schemas/CriteriaResult'
+          description: Detailed results for each criteria
+
+    CriteriaResult:
+      type: object
+      properties:
+        ruleKey:
+          type: string
+          description: Identifier of the rule
+          example: "B1"
+        passed:
+          type: boolean
+          description: Whether the criteria passed
+          example: true
+        description:
+          type: string
+          description: Description of the criteria
+          example: "The applicant must be from SC or ST or OBC castes"
+        reasons:
+          type: array
+          items:
+            type: string
+          description: Reasons for failure (if any)
+          example: []
+
+    EligibilityResult:
+      type: object
+      properties:
+        schemaId:
+          type: string
+          description: ID of the benefit schema
+          example: "ubi-pilot-scholarship-1"
+        details:
+          $ref: '#/components/schemas/EligibilityDetails'
+
+    UserEligibilityResult:
+      type: object
+      properties:
+        applicationId:
+          type: string
+          description: Application ID of the user
+          example: "APP001"
+        details:
+          $ref: '#/components/schemas/EligibilityDetails'
+
+    EligibilityResponse:
+      type: object
+      properties:
+        eligible:
+          type: array
+          items:
+            $ref: '#/components/schemas/EligibilityResult'
+          description: List of eligible benefits
+        ineligible:
+          type: array
+          items:
+            $ref: '#/components/schemas/EligibilityResult'
+          description: List of ineligible benefits
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              schemaId:
+                type: string
+                description: ID of the schema that caused the error
+              error:
+                type: string
+                description: Error message
+          description: List of errors encountered
+
+    UsersEligibilityResponse:
+      type: object
+      properties:
+        eligibleUsers:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserEligibilityResult'
+          description: List of eligible users
+        ineligibleUsers:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserEligibilityResult'
+          description: List of ineligible users
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              applicationId:
+                type: string
+                description: Application ID that caused the error
+              error:
+                type: string
+                description: Error message
+          description: List of errors encountered
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+          description: Health status
+          example: "ok"
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of the health check
+          example: "2024-01-15T10:30:00Z"
+        version:
+          type: string
+          description: API version
+          example: "1.0.0"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error type
+          example: "Bad Request"
+        message:
+          type: string
+          description: Detailed error message
+          example: "Request validation failed"
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: Field that caused the error
+              message:
+                type: string
+                description: Field-specific error message
+          description: Detailed validation errors
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication
+
+security:
+  - ApiKeyAuth: []
+
+externalDocs:
+  description: Find more information about the Benefit Eligibility SDK
+  url: https://github.com/your-org/ubi-eligibility-sdk
