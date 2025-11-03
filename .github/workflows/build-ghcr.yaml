@@ -1,18 +1,37 @@
-name: Build and Push to GHCR (UBA-DEV)
+name: Tag-based Build and Push to GHCR
 
 on:
+  push:
+    tags:
+      - "v*"
   workflow_dispatch:
     inputs:
-      tag:
-        description: 'Docker tag to use (e.g., v1.0.4)'
+      environment:
+        description: "Target environment (UBA-DEV or UBA-DEPWD-PILOT)"
         required: true
-        default: 'v1.0.1'
+        default: "UBA-DEV"
+      tag:
+        description: "Docker tag to use (e.g., v1.0.4)"
+        required: true
+        default: "v1.0.1"
 
 jobs:
   build_and_push:
+    name: Build and Push Docker Image to GHCR
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    environment: GHCR_BUILD
+
+    # Pick environment dynamically
+    environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || 'UBA-DEV' }}
+
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    env:
+      ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || 'UBA-DEV' }}
+      TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref_name }}
 
     steps:
       - name: Checkout code
@@ -22,17 +41,19 @@ jobs:
         run: echo "${{ secrets.GHCR_PAT_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Build and Push Docker Image
-        env:
-          IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/ubi-eligibility-sdk
-          TAG: ${{ github.event.inputs.tag }}
         run: |
-          echo "Building image: $IMAGE_NAME:$TAG"
-          docker build -t $IMAGE_NAME:$TAG .
-          docker tag $IMAGE_NAME:$TAG $IMAGE_NAME:latest
-          echo "Pushing image: $IMAGE_NAME:$TAG"
-          docker push $IMAGE_NAME:$TAG
-          docker push $IMAGE_NAME:latest
+          IMAGE_NAME=$(echo "ghcr.io/${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          TAG="${{ env.TAG }}"
+          echo "🏗️ Building image: $IMAGE_NAME:$TAG"
+          docker build -t "$IMAGE_NAME:$TAG" .
+          echo "🏷️ Tagging image as latest"
+          docker tag "$IMAGE_NAME:$TAG" "$IMAGE_NAME:latest"
+          echo "📤 Pushing image: $IMAGE_NAME:$TAG"
+          docker push "$IMAGE_NAME:$TAG"
+          echo "📤 Pushing image: $IMAGE_NAME:latest"
+          docker push "$IMAGE_NAME:latest"
           echo "$IMAGE_NAME:$TAG" > image.txt
+    
       - name: Upload Image URI
         uses: actions/upload-artifact@v4
         with:
