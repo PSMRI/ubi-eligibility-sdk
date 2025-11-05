@@ -53,7 +53,8 @@ function checkCriteria(userValue, condition, conditionValues) {
           case 'number':
             return Number(value);
           case 'string':
-            return String(value);
+            // Convert strings to lowercase for case-insensitive comparison
+            return String(value).toLowerCase();
           case 'boolean':
             return Boolean(value);
           default:
@@ -91,7 +92,7 @@ function checkCriteria(userValue, condition, conditionValues) {
         case "in":
         case "includes":
           result = (
-            Array.isArray(conditionValues) && 
+            Array.isArray(conditionValues) &&
             conditionValues.map(v => convertToType(v, valueType)).includes(convertedUserValue)
           );
           break;
