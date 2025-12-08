@@ -6,6 +6,7 @@ const eligibilityService = require("./services/eligibilityService");
 const swaggerConfig = require("./config/swagger");
 const benefitEligibleSchema = require("./schemas/check-eligibility-schema");
 const userEligibilitySchema = require("./schemas/check-users-eligibility-schema");
+const { translate } = require("./utils/i18n");
 
 // Register plugins
 fastify.register(cors, {
@@ -27,6 +28,27 @@ fastify.register(swaggerUI, {
   staticCSP: true,
   transformStaticCSP: (header) => header,
 });
+
+// Helper function to extract locale from request
+function getLocale(request) {
+  // Check query parameter first
+  const queryLocale = request.query?.locale || request.query?.lang;
+  if (queryLocale && ["en", "hi"].includes(queryLocale)) {
+    return queryLocale;
+  }
+  
+  // Check Accept-Language header
+  const acceptLanguage = request.headers["accept-language"];
+  if (acceptLanguage) {
+    const lang = acceptLanguage.split(",")[0].split("-")[0].toLowerCase();
+    if (["en", "hi"].includes(lang)) {
+      return lang;
+    }
+  }
+  
+  // Default to English
+  return "en";
+}
 
 // Health check route
 fastify.get(
@@ -56,22 +78,24 @@ fastify.get(
 );
 
 fastify.setErrorHandler((error, request, reply) => {
+  const locale = getLocale(request);
+  
   if (error.validation) {
     // This is a validation error (400)
     request.log.error(
       { validation: error.validation },
-      "Schema validation failed"
+      translate(locale, "errors.schemaValidationFailed")
     );
 
     return reply.status(400).send({ 
-      error: "Bad Request",
+      error: translate(locale, "errors.badRequest"),
       message: error.message,
       details: error.validation,
     });
   }
   request.log.error(error);
   return reply.status(error.statusCode || 500).send({ 
-    error: "Internal Server Error",
+    error: translate(locale, "errors.internalServerError"),
     message: error.message,
   });
 });
@@ -90,6 +114,11 @@ fastify.post(
             default: false,
             description: "Enable strict eligibility checking",
           },
+          locale: {
+            type: "string",
+            enum: ["en", "hi"],
+            description: "Language locale (en for English, hi for Hindi)",
+          },
         },
         additionalProperties: false, 
       },
@@ -97,16 +126,18 @@ fastify.post(
   },
   (request, reply) => {
     const strictChecking = Boolean(request.query.strictChecking);
+    const locale = getLocale(request);
     const { userProfile, benefitsList } = request.body;
 
     return eligibilityService.checkBenefitsEligibility(
       userProfile,
       benefitsList,
-      strictChecking
+      strictChecking,
+      locale
     ).catch(error => {
       request.log.error(error);
       return reply.status(error.statusCode ?? 500).send({
-        error: "Internal Server Error",
+        error: translate(locale, "errors.internalServerError"),
         message: error.message,
       });
     });
@@ -127,6 +158,11 @@ fastify.post(
             default: false,
             description: "Enable strict eligibility checking",
           },
+          locale: {
+            type: "string",
+            enum: ["en", "hi"],
+            description: "Language locale (en for English, hi for Hindi)",
+          },
         },
         additionalProperties: false, 
       },
@@ -134,6 +170,7 @@ fastify.post(
   },
   (request, reply) => {
     const strictChecking = Boolean(request.query.strictChecking);
+    const locale = getLocale(request);
     const { userProfiles, benefitSchema } = request.body;
 
     // Check if eligibility criteria is an array
@@ -144,11 +181,12 @@ fastify.post(
     return eligibilityService.checkUsersEligibility(
       userProfiles,
       { ...benefitSchema, eligibility: benefitCriteria },
-      strictChecking
+      strictChecking,
+      locale
     ).catch(error => {
       request.log.error(error);
       return reply.status(error.statusCode ?? 500).send({
-        error: "Internal Server Error",
+        error: translate(locale, "errors.internalServerError"),
         message: error.message,
       });
     });
