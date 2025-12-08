@@ -1,0 +1,26 @@
+{
+  "errors": {
+    "badRequest": "गलत अनुरोध",
+    "internalServerError": "आंतरिक सर्वर त्रुटि",
+    "schemaValidationFailed": "स्कीमा सत्यापन विफल",
+    "conditionRequired": "पात्रता जांच के लिए शर्त आवश्यक है",
+    "invalidConditionStructure": "अमान्य शर्त वस्तु संरचना",
+    "betweenConditionRequiresArray": "बीच की शर्त के लिए दो मानों की सरणी आवश्यक है",
+    "unsupportedCondition": "असमर्थित शर्त: {{condition}}",
+    "noEligibilityCriteria": "लाभ में कोई पात्रता मानदंड परिभाषित नहीं है",
+    "noRuleClassFound": "प्रकार के लिए कोई नियम वर्ग नहीं मिला: {{type}}",
+    "errorEvaluatingLogic": "eligibilityEvaluationLogic का मूल्यांकन करने में त्रुटि: {{message}}",
+    "missingUserProfileField": "आवश्यक userProfile फ़ील्ड गायब है: {{field}}",
+    "doesNotMeetCriteria": "मानदंड पूरे नहीं होते: {{condition}}",
+    "errorCheckingCriteria": "मानदंड जांचने में त्रुटि: {{message}}",
+    "missingDocument": "आवश्यक दस्तावेज़ गायब है: {{documentType}}",
+    "documentTypeNotAllowed": "दस्तावेज़ प्रकार '{{type}}' अनुमत नहीं है",
+    "invalidUnverifiedDocument": "अमान्य या अप्रमाणित दस्तावेज़",
+    "errorProcessingDocument": "दस्तावेज़ प्रसंस्करण में त्रुटि: {{message}}"
+  },
+  "success": {
+    "eligibleAllCriteriaPassed": "पात्र: सभी मानदंड पूरे हुए",
+    "eligibleCustomRule": "पात्र क्योंकि कस्टम नियम \"{{rule}}\" सत्य के साथ मूल्यांकित हुआ: {{results}}"
+  }
+}
+

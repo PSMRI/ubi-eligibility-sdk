@@ -2,6 +2,7 @@ const {
   checkBenefitEligibility,
 } = require("../utils/benefitSchemaEligibility.js");
 const logger = require("../utils/logger.js");
+const { translate } = require("../utils/i18n.js");
 
 class EligibilityService {
   /**
@@ -110,7 +111,7 @@ class EligibilityService {
    *     "errors": []
    * }
    */
-  checkBenefitsEligibility(userProfile, benefits, strictChecking) {
+  checkBenefitsEligibility(userProfile, benefits, strictChecking, locale = "en") {
     return Promise.all(
       benefits.map(async (benefit) => {
         try {
@@ -126,7 +127,8 @@ class EligibilityService {
             userProfile,
             benefitCriteria,
             eligibilityEvaluationLogic,
-            strictChecking
+            strictChecking,
+            locale
           );
 
           return {
@@ -138,7 +140,7 @@ class EligibilityService {
           logger.error("Error in checkBenefitsEligibility:", error);
           return {
             schemaId: benefit.id || "Unknown",
-            error: error.message,
+            error: translate(locale, "errors.errorCheckingCriteria", { message: error.message }),
             isError: true,
           };
         }
@@ -301,7 +303,7 @@ class EligibilityService {
    *     "errors": []
    * }
    */
-  checkUsersEligibility(userProfiles, benefit, strictChecking) {
+  checkUsersEligibility(userProfiles, benefit, strictChecking, locale = "en") {
     return Promise.all(
       userProfiles.map(async (userProfile) => {
         try {
@@ -317,7 +319,8 @@ class EligibilityService {
             userProfile,
             benefitCriteria,
             eligibilityEvaluationLogic,
-            strictChecking
+            strictChecking,
+            locale
           );
 
           return {
@@ -329,7 +332,7 @@ class EligibilityService {
           logger.error("Error in checkUsersEligibility:", error);
           return {
             applicationId: userProfile.applicationId || "Unknown",
-            error: error.message,
+            error: translate(locale, "errors.errorCheckingCriteria", { message: error.message }),
             isError: true,
           };
         }

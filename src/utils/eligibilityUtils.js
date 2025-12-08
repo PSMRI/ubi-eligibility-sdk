@@ -1,8 +1,11 @@
+const { translate } = require("./i18n");
+
 /**
  * Check a single criteria against user value
  * @param {*} userValue - User's value for the criteria
  * @param {string|object} condition - Condition to check
  * @param {*} conditionValues - Values to compare against
+ * @param {string} locale - Locale for error messages (default: "en")
  * @returns {Promise<boolean>} Whether criteria is met
  * @example
  * // Number comparison
@@ -26,18 +29,18 @@
  * // Object condition
  * checkCriteria(5, { condition: "gte" }, 3)  // returns true
  */
-function checkCriteria(userValue, condition, conditionValues) {
+function checkCriteria(userValue, condition, conditionValues, locale = "en") {
   return new Promise((resolve, reject) => {
     try {
       // check condition value array or single value
       // find condition datatype e.g int or string and convert userValue to that type
       if (!condition)
-        throw new Error("Condition is required for eligibility check");
+        throw new Error(translate(locale, "errors.conditionRequired"));
 
       let conditionStr;
       if (typeof condition === "object") {
         conditionStr = condition.condition || condition?.criteria?.condition;
-        if (!conditionStr) throw new Error("Invalid condition object structure");
+        if (!conditionStr) throw new Error(translate(locale, "errors.invalidConditionStructure"));
       } else {
         conditionStr = condition;
       }
@@ -125,7 +128,7 @@ function checkCriteria(userValue, condition, conditionValues) {
 
         case "between": {
           if (!Array.isArray(conditionValues) || conditionValues.length !== 2)
-            throw new Error("Between condition requires an array of two values");
+            throw new Error(translate(locale, "errors.betweenConditionRequiresArray"));
 
           const [min, max] = conditionValues.map(v => convertToType(v, valueType));
           result = convertedUserValue >= min && convertedUserValue <= max;
@@ -133,7 +136,7 @@ function checkCriteria(userValue, condition, conditionValues) {
         }
 
         default:
-          throw new Error(`Unsupported condition: ${conditionStr}`);
+          throw new Error(translate(locale, "errors.unsupportedCondition", { condition: conditionStr }));
       }
 
       resolve(result);
