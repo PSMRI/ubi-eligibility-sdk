@@ -1,0 +1,26 @@
+{
+  "errors": {
+    "badRequest": "Bad Request",
+    "internalServerError": "Internal Server Error",
+    "schemaValidationFailed": "Schema validation failed",
+    "conditionRequired": "Condition is required for eligibility check",
+    "invalidConditionStructure": "Invalid condition object structure",
+    "betweenConditionRequiresArray": "Between condition requires an array of two values",
+    "unsupportedCondition": "Unsupported condition: {{condition}}",
+    "noEligibilityCriteria": "No eligibility criteria defined in benefit",
+    "noRuleClassFound": "No rule class found for type: {{type}}",
+    "errorEvaluatingLogic": "Error evaluating eligibilityEvaluationLogic: {{message}}",
+    "missingUserProfileField": "Missing required userProfile field: {{field}}",
+    "doesNotMeetCriteria": "Does not meet criteria: {{condition}}",
+    "errorCheckingCriteria": "Error checking criteria: {{message}}",
+    "missingDocument": "Missing required document: {{documentType}}",
+    "documentTypeNotAllowed": "Document type '{{type}}' not allowed",
+    "invalidUnverifiedDocument": "Invalid or unverified document",
+    "errorProcessingDocument": "Error processing document: {{message}}"
+  },
+  "success": {
+    "eligibleAllCriteriaPassed": "Eligible: All criteria passed",
+    "eligibleCustomRule": "Eligible because custom rule \"{{rule}}\" evaluated to true with: {{results}}"
+  }
+}
+
