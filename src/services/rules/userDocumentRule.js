@@ -1,5 +1,6 @@
 const { checkCriteria } = require("../../utils/eligibilityUtils");
 const RuleInterface = require("../interfaces/RuleInterface");
+const { translate } = require("../../utils/i18n");
 
 /**
  * Rule class for checking user document criteria
@@ -96,7 +97,7 @@ const RuleInterface = require("../interfaces/RuleInterface");
  * }]
  */
 class UserDocumentRule extends RuleInterface {
-  execute(userProfile, criteria, strictCheckingFromQuery) {
+  execute(userProfile, criteria, strictCheckingFromQuery, locale = "en") {
     const reasons = [];
 
     // Use strictChecking from query param if provided, else from criteria
@@ -113,7 +114,7 @@ class UserDocumentRule extends RuleInterface {
         reasons.push({
           type: "userDocument",
           field: criteria.documentType,
-          reason: `Missing required document: ${criteria.documentType}`,
+          reason: translate(locale, "errors.missingDocument", { documentType: criteria.documentType }),
           description: criteria.description || "",
         });
       }
@@ -128,7 +129,7 @@ class UserDocumentRule extends RuleInterface {
       reasons.push({
         type: "userDocument",
         field: criteria.documentType,
-        reason: `Document type '${document.type}' not allowed`,
+        reason: translate(locale, "errors.documentTypeNotAllowed", { type: document.type }),
         description: criteria.description || "",
         userValue: document.type,
         requiredValue: criteria.allowedProofs,
@@ -145,7 +146,7 @@ class UserDocumentRule extends RuleInterface {
             reasons.push({
               type: "userDocument",
               field: criteria.documentKey,
-              reason: `Invalid or unverified document`,
+              reason: translate(locale, "errors.invalidUnverifiedDocument"),
               description: criteria.description || "",
             });
             return Promise.resolve(reasons);
@@ -157,13 +158,14 @@ class UserDocumentRule extends RuleInterface {
             return checkCriteria(
               docValue,
               criteria.condition,
-              criteria.conditionValues
+              criteria.conditionValues,
+              locale
             ).then(isEligible => {
               if (!isEligible) {
                 reasons.push({
                   type: "userDocument",
                   field: criteria.name,
-                  reason: `Does not meet criteria: ${criteria.condition}`,
+                  reason: translate(locale, "errors.doesNotMeetCriteria", { condition: criteria.condition }),
                   description: criteria.description || "",
                   userValue: docValue,
                   requiredValue: criteria.conditionValues,
@@ -179,7 +181,7 @@ class UserDocumentRule extends RuleInterface {
           reasons.push({
             type: "userDocument",
             field: criteria.documentType,
-            reason: `Error processing document: ${error.message}`,
+            reason: translate(locale, "errors.errorProcessingDocument", { message: error.message }),
             description: criteria.description || "",
           });
           return Promise.resolve(reasons);
@@ -192,13 +194,14 @@ class UserDocumentRule extends RuleInterface {
       return checkCriteria(
         docValue,
         criteria.condition,
-        criteria.conditionValues
+        criteria.conditionValues,
+        locale
       ).then(isEligible => {
         if (!isEligible) {
           reasons.push({
             type: "userDocument",
             field: criteria.name,
-            reason: `Does not meet criteria: ${criteria.condition}`,
+            reason: translate(locale, "errors.doesNotMeetCriteria", { condition: criteria.condition }),
             description: criteria.description || "",
             userValue: docValue,
             requiredValue: criteria.conditionValues,
@@ -210,7 +213,7 @@ class UserDocumentRule extends RuleInterface {
         reasons.push({
           type: "userDocument",
           field: criteria.documentType,
-          reason: `Error processing document: ${error.message}`,
+          reason: translate(locale, "errors.errorProcessingDocument", { message: error.message }),
           description: criteria.description || "",
         });
         return Promise.resolve(reasons);

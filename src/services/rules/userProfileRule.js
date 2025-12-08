@@ -1,5 +1,6 @@
 const { checkCriteria } = require("../../utils/eligibilityUtils");
 const RuleInterface = require("../interfaces/RuleInterface");
+const { translate } = require("../../utils/i18n");
 
 /**
  * Rule class for checking user profile criteria
@@ -101,12 +102,12 @@ const RuleInterface = require("../interfaces/RuleInterface");
  * [] // Empty array means all criteria passed
  */
 class UserProfileRule extends RuleInterface {
-  execute(userProfile, criteria, strictCheckingFromQuery) {
+  execute(userProfile, criteria, strictCheckingFromQuery, locale = "en") {
     const reasons = [];
 
     // Use strictChecking from query param if provided, else from criteria
-    const strictChecking = typeof strictCheckingFromQuery === 'boolean' 
-      ? strictCheckingFromQuery 
+    const strictChecking = typeof strictCheckingFromQuery === 'boolean'
+      ? strictCheckingFromQuery
       : Boolean(criteria.strictChecking);
 
     // Extract the value from userProfile based on criteria name
@@ -116,7 +117,7 @@ class UserProfileRule extends RuleInterface {
         reasons.push({
           type: "userProfile",
           field: criteria.name,
-          reason: `Missing required userProfile field: ${criteria.name}`,
+          reason: translate(locale, "errors.missingUserProfileField", { field: criteria.name }),
           description: criteria.description || "",
         });
       }
@@ -126,13 +127,14 @@ class UserProfileRule extends RuleInterface {
     return checkCriteria(
       value,
       criteria.condition,
-      criteria.conditionValues
+      criteria.conditionValues,
+      locale
     ).then(isEligible => {
       if (!isEligible) {
         reasons.push({
           type: "userProfile",
           field: criteria.name,
-          reason: `Does not meet criteria: ${criteria.condition}`,
+          reason: translate(locale, "errors.doesNotMeetCriteria", { condition: criteria.condition }),
           description: criteria.description || "",
           userValue: value,
           requiredValue: criteria.conditionValues,
@@ -144,7 +146,7 @@ class UserProfileRule extends RuleInterface {
       reasons.push({
         type: "userProfile",
         field: criteria.name,
-        reason: `Error checking criteria: ${error.message}`,
+        reason: translate(locale, "errors.errorCheckingCriteria", { message: error.message }),
         description: criteria.description || "",
       });
       return reasons;

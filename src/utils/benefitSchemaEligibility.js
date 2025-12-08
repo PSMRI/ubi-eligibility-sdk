@@ -1,5 +1,6 @@
 const vm = require("vm");
 const logger = require("../utils/logger");
+const { translate } = require("../utils/i18n");
 
 /**
  * Check eligibility for a single benefit schema
@@ -153,7 +154,8 @@ function checkBenefitEligibility(
   userProfile,
   benefit,
   eligibilityEvaluationLogic,
-  strictChecking
+  strictChecking,
+  locale = "en"
 ) {
   // Ensure strictChecking is a boolean
   const isStrictChecking = Boolean(strictChecking);
@@ -161,7 +163,7 @@ function checkBenefitEligibility(
   if (!benefit || !Array.isArray(benefit)) { 
     return Promise.resolve({
       isEligible: false,
-      reasons: ["No eligibility criteria defined in benefit"],
+      reasons: [translate(locale, "errors.noEligibilityCriteria")],
     });
   }
 
@@ -184,7 +186,7 @@ function checkBenefitEligibility(
       if (!RuleClass) {
         reasons.push({
           type,
-          reason: `No rule class found for type: ${type}`,
+          reason: translate(locale, "errors.noRuleClassFound", { type }),
           description,
         });
         return;
@@ -198,7 +200,8 @@ function checkBenefitEligibility(
       ruleReasons = await ruleInstance.execute( 
         userProfile,
         criteria,
-        isStrictChecking
+        isStrictChecking,
+        locale
       );
 
       // If ruleReasons are present, it means the rule did not pass
@@ -231,12 +234,15 @@ function checkBenefitEligibility(
         );
 
         if (isEligible) {
-          customRuleMessage = `Eligible because custom rule "${eligibilityEvaluationLogic}" evaluated to true with: ${JSON.stringify(evaluationResults)}`;
+          customRuleMessage = translate(locale, "success.eligibleCustomRule", {
+            rule: eligibilityEvaluationLogic,
+            results: JSON.stringify(evaluationResults)
+          });
         }
       } catch (err) {
         reasons.push({
           type: "eligibilityEvaluationLogic",
-          reason: `Error evaluating eligibilityEvaluationLogic: ${err.message}`,
+          reason: translate(locale, "errors.errorEvaluatingLogic", { message: err.message }),
           description: eligibilityEvaluationLogic,
         });
         logger.error("Error evaluating eligibilityEvaluationLogic:", err);
@@ -252,7 +258,7 @@ function checkBenefitEligibility(
     // Default: eligible if no reasons
     return {
       isEligible: reasons.length === 0,
-      reasons: reasons.length > 0 ? reasons : ["Eligible: All criteria passed"],
+      reasons: reasons.length > 0 ? reasons : [translate(locale, "success.eligibleAllCriteriaPassed")],
       evaluationResults,
       criteriaResults,
     };
