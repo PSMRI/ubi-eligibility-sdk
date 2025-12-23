@@ -1,0 +1,106 @@
+{
+  "info": {
+    "_postman_id": "eligibility-api-collection-id",
+    "name": "Benefit Eligibility SDK API Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "API collection for Benefit Eligibility SDK endpoints."
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "Check Eligibility - Single User Multiple Benefits",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-API-Key",
+            "value": "{{apiKey}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userProfile\": {\n    \"user_id\": \"3884735a-8ffe-4ad0-bb5c-741d010fbe34\",\n    \"firstName\": \"Ankushkumar\",\n    \"middleName\": \"\",\n    \"lastName\": \"Maherwal\",\n    \"email\": \"user@example.com\",\n    \"phoneNumber\": \"9766398435\",\n    \"dob\": \"1990-01-01\",\n    \"sso_provider\": \"keycloak\",\n    \"sso_id\": \"435020b0-99de-48ac-81eb-c617b9664854\",\n    \"image\": \"\",\n    \"fieldsVerified\": \"false\",\n    \"fieldsVerifiedAt\": \"Mon Sep 15 2025 14:40:16 GMT+0530 (India Standard Time)\",\n    \"fieldsVerificationData\": \"[object Object]\",\n    \"walletToken\": \"e5003b22-dd9b-4da4-827d-2bdc319c8235\",\n    \"created_at\": \"Wed Jul 16 2025 09:57:05 GMT+0530 (India Standard Time)\",\n    \"updated_at\": \"Mon Sep 15 2025 14:40:16 GMT+0530 (India Standard Time)\",\n    \"docs\": \"\",\n    \"customFields\": \"[object Object],[object Object]\",\n    \"fatherName\": \"\",\n    \"gender\": \"male\",\n    \"caste\": \"sc\",\n    \"annualIncome\": \"400000\",\n    \"disabilityStatus\": \"\",\n    \"aadhaar\": \"\",\n    \"age\": \"25\",\n    \"nspOtr\": \"\",\n    \"studentType\": \"\",\n    \"udid\": \"\",\n    \"class\": \"9\",\n    \"currentSchoolName\": \"\",\n    \"previousYearMarks\": \"75\",\n    \"disabilityType\": \"\",\n    \"disabilityRange\": \"\",\n    \"bankAccountHolderName\": \"\",\n    \"bankName\": \"\",\n    \"branchCode\": \"\",\n    \"bankAccountNumber\": \"\",\n    \"bankIfscCode\": \"\",\n    \"bankAddress\": \"\",\n    \"tuitionAndAdminFeePaid\": \"\",\n    \"miscFeePaid\": \"\",\n    \"state\": \"Maharashtra\",\n    \"acres\": \"\"\n  },\n  \"benefitsList\": [\n    {\n      \"id\": 29677,\n      \"eligibility\": [\n        {\n          \"id\": \"B1\",\n          \"type\": \"userProfile\",\n          \"description\": \"The applicant must be from SC or ST or OBC castes\",\n          \"criteria\": {\n            \"name\": \"caste\",\n            \"condition\": \"in\",\n            \"conditionValues\": [\"sc\", \"st\", \"obc\"]\n          }\n        },\n        {\n          \"id\": \"B2\",\n          \"type\": \"userProfile\",\n          \"description\": \"The Total Annual income must not exceed ₹2.7 Lakh per Annum\",\n          \"criteria\": {\n            \"name\": \"annualIncome\",\n            \"condition\": \"lte\",\n            \"conditionValues\": 270000\n          }\n        }\n      ],\n      \"eligibilityEvaluationLogic\": \"(B1 && B2)\"\n    },\n    {\n      \"id\": 29682,\n      \"eligibility\": [\n        {\n          \"id\": \"C1\",\n          \"type\": \"userProfile\",\n          \"description\": \"Age must be between 16 and 25 years\",\n          \"criteria\": {\n            \"name\": \"age\",\n            \"condition\": \"between\",\n            \"conditionValues\": [16, 25]\n          }\n        }\n      ],\n      \"eligibilityEvaluationLogic\": \"C1\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/check-eligibility?strictChecking=true",
+          "host": ["{{baseUrl}}"],
+          "path": ["check-eligibility"],
+          "query": [
+            {
+              "key": "strictChecking",
+              "value": "true"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Check Eligibility - Multiple Users Single Benefit",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-API-Key",
+            "value": "{{apiKey}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userProfiles\": [\n    {\n      \"user_id\": \"3884735a-8ffe-4ad0-bb5c-741d010fbe34\",\n      \"firstName\": \"Ankushkumar\",\n      \"lastName\": \"Maherwal\",\n      \"gender\": \"male\",\n      \"caste\": \"sc\",\n      \"annualIncome\": \"200000\",\n      \"age\": \"20\",\n      \"class\": \"9\",\n      \"previousYearMarks\": \"75\",\n      \"state\": \"Maharashtra\",\n      \"applicationId\": \"APP001\"\n    },\n    {\n      \"user_id\": \"435020b0-99de-48ac-81eb-c617b9664854\",\n      \"firstName\": \"Jane\",\n      \"lastName\": \"Smith\",\n      \"gender\": \"female\",\n      \"caste\": \"st\",\n      \"annualIncome\": \"300000\",\n      \"age\": \"22\",\n      \"class\": \"11\",\n      \"previousYearMarks\": \"85\",\n      \"state\": \"Rajasthan\",\n      \"applicationId\": \"APP002\"\n    }\n  ],\n  \"benefitSchema\": {\n    \"id\": 29677,\n    \"eligibility\": [\n      {\n        \"id\": \"B1\",\n        \"type\": \"userProfile\",\n        \"description\": \"The applicant must be from SC or ST or OBC castes\",\n        \"criteria\": {\n          \"name\": \"caste\",\n          \"condition\": \"in\",\n          \"conditionValues\": [\"sc\", \"st\", \"obc\"]\n        }\n      },\n      {\n        \"id\": \"B2\",\n        \"type\": \"userProfile\",\n        \"description\": \"The Total Annual income must not exceed ₹2.7 Lakh per Annum\",\n        \"criteria\": {\n          \"name\": \"annualIncome\",\n          \"condition\": \"lte\",\n          \"conditionValues\": 270000\n        }\n      }\n    ],\n    \"eligibilityEvaluationLogic\": \"(B1 && B2)\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/check-users-eligibility?strictChecking=false",
+          "host": ["{{baseUrl}}"],
+          "path": ["check-users-eligibility"],
+          "query": [
+            {
+              "key": "strictChecking",
+              "value": "false"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get API Documentation",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/documentation",
+          "host": ["{{baseUrl}}"],
+          "path": ["documentation"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:3011"
+    },
+    {
+      "key": "apiKey",
+      "value": "your-api-key-here"
+    }
+  ]
+}

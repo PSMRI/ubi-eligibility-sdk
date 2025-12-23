@@ -71,17 +71,26 @@ paths:
                 summary: Scholarship Eligibility Check
                 value:
                   userProfile:
-                    name: "John Doe"
+                    user_id: "3884735a-8ffe-4ad0-bb5c-741d010fbe34"
+                    firstName: "Ankushkumar"
+                    middleName: ""
+                    lastName: "Maherwal"
+                    email: "user@example.com"
+                    phoneNumber: "9766398435"
+                    dob: "1990-01-01"
+                    sso_provider: "keycloak"
+                    sso_id: "435020b0-99de-48ac-81eb-c617b9664854"
                     gender: "male"
-                    age: 16
-                    dateOfBirth: "2008-01-01"
                     caste: "sc"
-                    income: 400000
+                    annualIncome: "400000"
+                    age: "25"
                     class: "9"
-                    previousYearMarks: 75
+                    previousYearMarks: "75"
                     state: "Maharashtra"
+                    fieldsVerified: "false"
+                    walletToken: "e5003b22-dd9b-4da4-827d-2bdc319c8235"
                   benefitsList:
-                    - id: "ubi-pilot-scholarship-1"
+                    - id: 29677
                       eligibility:
                         - id: "B1"
                           type: "userProfile"
@@ -94,7 +103,7 @@ paths:
                           type: "userProfile"
                           description: "The Total Annual income must not exceed ₹2.7 Lakh per Annum"
                           criteria:
-                            name: "income"
+                            name: "annualIncome"
                             condition: "lte"
                             conditionValues: 270000
                       eligibilityEvaluationLogic: "(B1 && B2)"
@@ -110,7 +119,7 @@ paths:
                   summary: User is eligible for benefits
                   value:
                     eligible:
-                      - schemaId: "ubi-pilot-scholarship-1"
+                      - schemaId: 29677
                         details:
                           isEligible: true
                           reasons: ["Eligible: All criteria passed"]
@@ -133,7 +142,7 @@ paths:
                   value:
                     eligible: []
                     ineligible:
-                      - schemaId: "ubi-pilot-scholarship-1"
+                      - schemaId: 29677
                         details:
                           isEligible: false
                           reasons: ["Income 400000 exceeds the maximum limit of 270000"]
@@ -339,71 +348,185 @@ components:
     UserProfile:
       type: object
       required:
-        - name
-        - gender
-        - age
-        - dateOfBirth
-        - caste
-        - income
+        - user_id
+        - firstName
+        - lastName
       properties:
-        name:
+        user_id:
           type: string
-          description: Full name of the user
-          example: "John Doe"
+          description: Unique user identifier
+          example: "3884735a-8ffe-4ad0-bb5c-741d010fbe34"
+        firstName:
+          type: string
+          description: First name of the user
+          example: "Ankushkumar"
+        middleName:
+          type: string
+          description: Middle name of the user
+          example: ""
+        lastName:
+          type: string
+          description: Last name of the user
+          example: "Maherwal"
+        email:
+          type: string
+          format: email
+          description: Email address of the user
+          example: "user@example.com"
+        phoneNumber:
+          type: string
+          description: Phone number of the user
+          example: "9766398435"
+        dob:
+          type: string
+          description: Date of birth
+          example: "1990-01-01"
+        sso_provider:
+          type: string
+          description: SSO provider used for authentication
+          example: "keycloak"
+        sso_id:
+          type: string
+          description: SSO identifier
+          example: "435020b0-99de-48ac-81eb-c617b9664854"
+        image:
+          type: string
+          description: User profile image URL
+          example: ""
+        fieldsVerified:
+          type: string
+          description: Whether fields are verified
+          example: "false"
+        fieldsVerifiedAt:
+          type: string
+          description: Timestamp when fields were verified
+          example: "Mon Sep 15 2025 14:40:16 GMT+0530 (India Standard Time)"
+        fieldsVerificationData:
+          type: string
+          description: Fields verification data
+          example: "[object Object]"
+        walletToken:
+          type: string
+          description: Wallet authentication token
+          example: "e5003b22-dd9b-4da4-827d-2bdc319c8235"
+        created_at:
+          type: string
+          description: User creation timestamp
+          example: "Wed Jul 16 2025 09:57:05 GMT+0530 (India Standard Time)"
+        updated_at:
+          type: string
+          description: User last update timestamp
+          example: "Mon Sep 15 2025 14:40:16 GMT+0530 (India Standard Time)"
+        docs:
+          type: string
+          description: User documents
+          example: ""
+        customFields:
+          type: string
+          description: Custom fields data
+          example: "[object Object],[object Object]"
+        fatherName:
+          type: string
+          description: Father's name
+          example: ""
         gender:
           type: string
-          enum: [male, female]
+          enum: [male, female, other]
           description: Gender of the user
           example: "male"
-        age:
-          type: number
-          description: Age of the user
-          minimum: 0
-          maximum: 120
-          example: 16
-        dateOfBirth:
-          type: string
-          format: date
-          description: Date of birth in YYYY-MM-DD format
-          example: "2008-01-01"
         caste:
           type: string
           enum: [sc, st, obc, general, ews, bc, mbc, nt, vjan, dnt, sbc, other]
           description: Caste category
           example: "sc"
-        income:
-          type: number
-          description: Annual income in INR
-          minimum: 0
-          example: 400000
+        annualIncome:
+          type: string
+          description: Annual income
+          example: "400000"
+        disabilityStatus:
+          type: string
+          description: Disability status
+          example: ""
+        aadhaar:
+          type: string
+          description: Aadhaar number
+          example: ""
+        age:
+          type: string
+          description: Age of the user
+          example: "25"
+        nspOtr:
+          type: string
+          description: NSP OTR information
+          example: ""
+        studentType:
+          type: string
+          description: Type of student
+          example: ""
+        udid:
+          type: string
+          description: UDID number
+          example: ""
         class:
           type: string
           description: Educational class/grade
           example: "9"
+        currentSchoolName:
+          type: string
+          description: Current school name
+          example: ""
         previousYearMarks:
-          type: number
+          type: string
           description: Previous year academic marks
-          minimum: 0
-          maximum: 100
-          example: 75
+          example: "75"
+        disabilityType:
+          type: string
+          description: Type of disability
+          example: ""
+        disabilityRange:
+          type: string
+          description: Disability range
+          example: ""
+        bankAccountHolderName:
+          type: string
+          description: Bank account holder name
+          example: ""
+        bankName:
+          type: string
+          description: Bank name
+          example: ""
+        branchCode:
+          type: string
+          description: Bank branch code
+          example: ""
+        bankAccountNumber:
+          type: string
+          description: Bank account number
+          example: ""
+        bankIfscCode:
+          type: string
+          description: Bank IFSC code
+          example: ""
+        bankAddress:
+          type: string
+          description: Bank address
+          example: ""
+        tuitionAndAdminFeePaid:
+          type: string
+          description: Tuition and admin fee paid status
+          example: ""
+        miscFeePaid:
+          type: string
+          description: Miscellaneous fee paid status
+          example: ""
         state:
           type: string
           description: State of residence
           example: "Maharashtra"
-        applicationId:
+        acres:
           type: string
-          description: Unique application identifier
-          example: "APP001"
-        documents:
-          type: object
-          description: User documents with verification status
-          additionalProperties:
-            type: object
-            properties:
-              verified:
-                type: boolean
-                description: Whether the document is verified
-                example: true
+          description: Land area in acres
+          example: ""
 
     EligibilityCriteria:
       type: object
@@ -463,12 +586,13 @@ components:
     BenefitSchema:
       type: object
       required:
+        - id
         - eligibility
       properties:
         id:
-          type: string
+          type: integer
           description: Unique identifier for the benefit schema
-          example: "ubi-pilot-scholarship-1"
+          example: 29677
         eligibility:
           type: array
           items:
@@ -560,9 +684,9 @@ components:
       type: object
       properties:
         schemaId:
-          type: string
+          type: integer
           description: ID of the benefit schema
-          example: "ubi-pilot-scholarship-1"
+          example: 29677
         details:
           $ref: '#/components/schemas/EligibilityDetails'
 
